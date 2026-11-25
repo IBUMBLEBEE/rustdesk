@@ -566,7 +566,9 @@ class ServerModel with ChangeNotifier {
         _clients.removeAt(index_disconnected);
         tabController.remove(index_disconnected);
       }
-      if (desktopType == DesktopType.cm && !hideCm) {
+      if (desktopType == DesktopType.cm &&
+          !hideCm &&
+          !client.isAuthorizedPortForward) {
         showCmWindow();
       }
       scrollToBottom();
@@ -585,11 +587,13 @@ class ServerModel with ChangeNotifier {
         closable: false,
         onTap: () {},
         page: desktop.buildConnectionCard(client)));
-    Future.delayed(Duration.zero, () async {
-      if (!hideCm) windowOnTop(null);
-    });
+    if (!client.isAuthorizedPortForward) {
+      Future.delayed(Duration.zero, () async {
+        if (!hideCm) windowOnTop(null);
+      });
+    }
     // Only do the hidden task when on Desktop.
-    if (client.authorized && isDesktop) {
+    if (client.authorized && isDesktop && !client.isAuthorizedPortForward) {
       cmHiddenTimer = Timer(const Duration(seconds: 3), () {
         if (!hideCm) windowManager.minimize();
         cmHiddenTimer = null;
@@ -884,6 +888,8 @@ class Client {
     data['incoming_voice_call'] = incomingVoiceCall;
     return data;
   }
+
+  bool get isAuthorizedPortForward => authorized && portForward.isNotEmpty;
 
   ClientType type_() {
     if (isFileTransfer) {

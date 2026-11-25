@@ -1,0 +1,15 @@
+name: Windows test build
+
+on:
+  push:
+    branches: [fix/tcp-forward-focus]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    uses: ./.github/workflows/flutter-build.yml
+    with:
+      windows-test: true
+      upload-artifact: true
